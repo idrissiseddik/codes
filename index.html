@@ -1,0 +1,436 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Codes Fruits & Légumes</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+body{
+    background:linear-gradient(135deg,#198754,#20c997);
+    padding-bottom:70px;
+}
+.menu-btn{
+    height:65px;
+    font-size:18px;
+    border-radius:15px;
+}
+.offcanvas{
+    height:100vh !important;
+}
+.table th{
+    background:#198754;
+    color:white;
+}
+footer{
+    position:fixed;
+    bottom:0;
+    width:100%;
+    background:#000;
+    color:#fff;
+    text-align:center;
+    padding:10px;
+    font-size:14px;
+}
+</style>
+</head>
+<body>
+
+<div class="container py-5 text-center">
+
+<h2 class="text-white mb-4">
+<i class="fa-solid fa-apple-whole"></i>
+Codes Fruits & Légumes
+</h2>
+
+<div class="row g-3">
+
+<div class="col-md-6 d-grid">
+<button class="btn btn-light menu-btn" data-bs-toggle="offcanvas" data-bs-target="#addCanvas">
+<i class="fa fa-plus me-2"></i> Ajouter
+</button>
+</div>
+
+<div class="col-md-6 d-grid">
+<button class="btn btn-warning menu-btn" data-bs-toggle="offcanvas" data-bs-target="#searchCanvas">
+<i class="fa fa-search me-2"></i> Rechercher
+</button>
+</div>
+
+<div class="col-md-6 d-grid">
+<button class="btn btn-primary menu-btn" data-bs-toggle="offcanvas" data-bs-target="#editCanvas">
+<i class="fa fa-edit me-2"></i> Modifier
+</button>
+</div>
+
+<div class="col-md-6 d-grid">
+<button class="btn btn-danger menu-btn" data-bs-toggle="offcanvas" data-bs-target="#deleteCanvas">
+<i class="fa fa-trash me-2"></i> Supprimer
+</button>
+</div>
+
+<div class="col-md-6 d-grid">
+<button class="btn btn-dark menu-btn" data-bs-toggle="offcanvas" data-bs-target="#allCanvas" onclick="afficherTous()">
+<i class="fa fa-list me-2"></i> Afficher Tous
+</button>
+</div>
+
+<div class="col-md-6 d-grid">
+<button class="btn btn-secondary menu-btn" onclick="ouvrirAdmin()">
+<i class="fa fa-user-shield me-2"></i> Admin
+</button>
+</div>
+
+</div>
+</div>
+
+<footer>
+Créé par : <strong>M.Seddik Elidrissi</strong>
+</footer>
+
+<!-- AJOUT -->
+<div class="offcanvas offcanvas-top" id="addCanvas">
+<div class="offcanvas-header bg-success text-white">
+<h5>Ajouter Article</h5>
+<button class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+</div>
+<div class="offcanvas-body">
+<input type="text" id="designation" class="form-control mb-3" placeholder="Désignation">
+<input type="text" id="code" class="form-control mb-3" placeholder="Code Balance">
+<button class="btn btn-success" onclick="ajouterArticle()">Enregistrer</button>
+</div>
+</div>
+
+<!-- RECHERCHE -->
+<div class="offcanvas offcanvas-top" id="searchCanvas">
+<div class="offcanvas-header bg-warning">
+<h5>Rechercher</h5>
+<button class="btn-close" data-bs-dismiss="offcanvas"></button>
+</div>
+<div class="offcanvas-body">
+<input type="text" id="searchInput" class="form-control mb-3" onkeyup="rechercher()" placeholder="Tapez la désignation...">
+<div id="searchResult"></div>
+</div>
+</div>
+
+<!-- MODIFIER -->
+<div class="offcanvas offcanvas-top" id="editCanvas">
+<div class="offcanvas-header bg-primary text-white">
+<h5>Modifier Article</h5>
+<button class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+</div>
+<div class="offcanvas-body">
+
+<input type="text" id="editSearch" class="form-control mb-3" placeholder="Chercher par désignation">
+<button class="btn btn-primary mb-3" onclick="chercherArticleModifier()">Rechercher</button>
+
+<div id="editZone" style="display:none;">
+<input type="text" id="newDes" class="form-control mb-2">
+<input type="text" id="newCode" class="form-control mb-2">
+<button class="btn btn-success" onclick="validerModification()">Valider Modification</button>
+</div>
+
+</div>
+</div>
+
+<!-- SUPPRIMER -->
+<div class="offcanvas offcanvas-top" id="deleteCanvas">
+<div class="offcanvas-header bg-danger text-white">
+<h5>Supprimer Article</h5>
+<button class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+</div>
+<div class="offcanvas-body">
+
+<input type="text" id="deleteSearch" class="form-control mb-3" placeholder="Chercher par désignation">
+<button class="btn btn-danger mb-3" onclick="chercherArticleSupprimer()">Rechercher</button>
+
+<div id="deleteZone" style="display:none;">
+<div class="alert alert-warning" id="deleteInfo"></div>
+<button class="btn btn-danger" onclick="confirmerSuppression()">Confirmer Suppression</button>
+</div>
+
+</div>
+</div>
+
+<!-- AFFICHER -->
+<div class="offcanvas offcanvas-top" id="allCanvas">
+<div class="offcanvas-header bg-dark text-white">
+<h5>Liste des Articles</h5>
+<button class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+</div>
+<div class="offcanvas-body">
+<div class="table-responsive">
+<table class="table table-bordered text-center">
+<thead>
+<tr><th>Désignation</th><th>Code</th></tr>
+</thead>
+<tbody id="tableBody"></tbody>
+</table>
+</div>
+</div>
+</div>
+
+<!-- ADMIN -->
+<div class="offcanvas offcanvas-top" id="adminCanvas">
+<div class="offcanvas-header bg-secondary text-white">
+<h5>Espace Administrateur</h5>
+<button class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+</div>
+<div class="offcanvas-body text-center">
+
+<button class="btn btn-success m-2" onclick="exportJSON()">
+<i class="fa fa-download"></i> Exporter JSON
+</button>
+
+<input type="file" id="importFile" class="form-control my-3">
+
+<button class="btn btn-primary" onclick="importJSON()">
+<i class="fa fa-upload"></i> Importer JSON
+</button>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+let articles = JSON.parse(localStorage.getItem("articles")) || [];
+let indexTemp = null;
+
+function save(){ localStorage.setItem("articles",JSON.stringify(articles)); }
+function sortArticles(){ articles.sort((a,b)=>a.designation.localeCompare(b.designation)); }
+
+function resetAddFields() {
+    document.getElementById("designation").value = "";
+    document.getElementById("code").value = "";
+}
+
+function resetSearchFields() {
+    document.getElementById("searchInput").value = "";
+    document.getElementById("searchResult").innerHTML = "";
+}
+
+function resetEditFields() {
+    document.getElementById("editSearch").value = "";
+    document.getElementById("newDes").value = "";
+    document.getElementById("newCode").value = "";
+    document.getElementById("editZone").style.display = "none";
+    indexTemp = null;
+}
+
+function resetDeleteFields() {
+    document.getElementById("deleteSearch").value = "";
+    document.getElementById("deleteInfo").innerHTML = "";
+    document.getElementById("deleteZone").style.display = "none";
+    indexTemp = null;
+}
+
+function ajouterArticle(){
+let d=document.getElementById("designation").value.trim();
+let c=document.getElementById("code").value.trim();
+if(!d||!c){ Swal.fire("Erreur","Champs obligatoires","error"); return;}
+
+// Vérification si le code existe déjà
+let codeExiste = articles.some(article => article.code === c);
+if(codeExiste) {
+    Swal.fire("Erreur","Ce code Balance est déjà enregistré !","error");
+    return;
+}
+
+articles.push({designation:d,code:c});
+sortArticles(); save();
+Swal.fire("Succès","Article ajouté","success").then(() => {
+    resetAddFields();
+    // Fermer l'offcanvas après l'ajout
+    let offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('addCanvas'));
+    if(offcanvas) offcanvas.hide();
+});
+}
+
+function rechercher(){
+let val=document.getElementById("searchInput").value.toLowerCase();
+if(val === "") {
+    document.getElementById("searchResult").innerHTML = "";
+    return;
+}
+let result="";
+articles.forEach(a=>{
+if(a.designation.toLowerCase().includes(val)){
+result+=`<div class="alert alert-success">${a.designation} - ${a.code}</div>`;
+}});
+document.getElementById("searchResult").innerHTML=result || "<div class='alert alert-warning'>Aucun résultat</div>";
+}
+
+function chercherArticleModifier(){
+let val=document.getElementById("editSearch").value.toLowerCase();
+if(!val) {
+    Swal.fire("Erreur","Veuillez saisir une désignation","error");
+    return;
+}
+indexTemp=articles.findIndex(a=>a.designation.toLowerCase()===val);
+if(indexTemp!==-1){
+document.getElementById("editZone").style.display="block";
+document.getElementById("newDes").value=articles[indexTemp].designation;
+document.getElementById("newCode").value=articles[indexTemp].code;
+}else{
+Swal.fire("Article introuvable","","error");
+}
+}
+
+function validerModification(){
+if(indexTemp === null) {
+    Swal.fire("Erreur","Aucun article sélectionné","error");
+    return;
+}
+let newDes = document.getElementById("newDes").value.trim();
+let newCode = document.getElementById("newCode").value.trim();
+if(!newDes || !newCode) {
+    Swal.fire("Erreur","Tous les champs sont obligatoires","error");
+    return;
+}
+
+// Vérification si le nouveau code existe déjà (sauf pour l'article en cours de modification)
+let codeExiste = articles.some((article, idx) => idx !== indexTemp && article.code === newCode);
+if(codeExiste) {
+    Swal.fire("Erreur","Ce code Balance est déjà utilisé par un autre article !","error");
+    return;
+}
+
+articles[indexTemp].designation = newDes;
+articles[indexTemp].code = newCode;
+sortArticles(); save();
+Swal.fire("Modification réussie","","success").then(() => {
+    resetEditFields();
+    // Fermer l'offcanvas après la modification
+    let offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('editCanvas'));
+    if(offcanvas) offcanvas.hide();
+});
+}
+
+function chercherArticleSupprimer(){
+let val=document.getElementById("deleteSearch").value.toLowerCase();
+if(!val) {
+    Swal.fire("Erreur","Veuillez saisir une désignation","error");
+    return;
+}
+indexTemp=articles.findIndex(a=>a.designation.toLowerCase()===val);
+if(indexTemp!==-1){
+document.getElementById("deleteZone").style.display="block";
+document.getElementById("deleteInfo").innerHTML=
+"<strong>"+articles[indexTemp].designation+"</strong> - Code : "+articles[indexTemp].code;
+}else{
+Swal.fire("Article introuvable","","error");
+}
+}
+
+function confirmerSuppression(){
+if(indexTemp === null) {
+    Swal.fire("Erreur","Aucun article sélectionné","error");
+    return;
+}
+articles.splice(indexTemp,1);
+save();
+Swal.fire("Article supprimé","","success").then(() => {
+    resetDeleteFields();
+    // Fermer l'offcanvas après la suppression
+    let offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('deleteCanvas'));
+    if(offcanvas) offcanvas.hide();
+});
+}
+
+function afficherTous(){
+sortArticles();
+let table="";
+if(articles.length === 0) {
+    table = "<tr><td colspan='2' class='text-center'>Aucun article</td></tr>";
+} else {
+    articles.forEach(a=>{
+    table+=`<tr><td>${a.designation}</td><td>${a.code}</td></tr>`;
+    });
+}
+document.getElementById("tableBody").innerHTML=table;
+}
+
+function ouvrirAdmin(){
+Swal.fire({
+title:"Mot de passe Admin",
+input:"password",
+showCancelButton:true
+}).then(result=>{
+if(result.value==="Seddik"){
+let admin=new bootstrap.Offcanvas(document.getElementById('adminCanvas'));
+admin.show();
+}else if(result.value){
+Swal.fire("Accès refusé","","error");
+}
+});
+}
+
+function exportJSON(){
+if(articles.length===0){ Swal.fire("Aucune donnée","","warning"); return;}
+let blob=new Blob([JSON.stringify(articles,null,2)],{type:"application/json"});
+let url=URL.createObjectURL(blob);
+let a=document.createElement("a");
+a.href=url;
+a.download="articles_backup.json";
+a.click();
+URL.revokeObjectURL(url);
+Swal.fire("Export réussi","","success");
+}
+
+function importJSON(){
+let file=document.getElementById("importFile").files[0];
+if(!file){ Swal.fire("Choisir un fichier","","warning"); return;}
+let reader=new FileReader();
+reader.onload=function(e){
+try{
+articles=JSON.parse(e.target.result);
+sortArticles(); save();
+Swal.fire("Import réussi","","success").then(() => {
+    document.getElementById("importFile").value = "";
+});
+}catch{ Swal.fire("Fichier invalide","","error"); }
+};
+reader.readAsText(file);
+}
+
+// Réinitialisation des champs quand les offcanvas sont fermés
+document.addEventListener('DOMContentLoaded', function() {
+    // Pour l'offcanvas d'ajout
+    document.getElementById('addCanvas').addEventListener('hidden.bs.offcanvas', function () {
+        resetAddFields();
+    });
+    
+    // Pour l'offcanvas de recherche
+    document.getElementById('searchCanvas').addEventListener('hidden.bs.offcanvas', function () {
+        resetSearchFields();
+    });
+    
+    // Pour l'offcanvas de modification
+    document.getElementById('editCanvas').addEventListener('hidden.bs.offcanvas', function () {
+        resetEditFields();
+    });
+    
+    // Pour l'offcanvas de suppression
+    document.getElementById('deleteCanvas').addEventListener('hidden.bs.offcanvas', function () {
+        resetDeleteFields();
+    });
+    
+    // Pour l'offcanvas d'affichage
+    document.getElementById('allCanvas').addEventListener('hidden.bs.offcanvas', function () {
+        document.getElementById("tableBody").innerHTML = "";
+    });
+    
+    // Pour l'offcanvas admin
+    document.getElementById('adminCanvas').addEventListener('hidden.bs.offcanvas', function () {
+        document.getElementById("importFile").value = "";
+    });
+});
+</script>
+
+</body>
+</html>
