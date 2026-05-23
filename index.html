@@ -49,6 +49,25 @@ footer{
     flex-direction: column;
     display: none;
 }
+
+/* --- ANIMATIONS PERSO DU BIENVENUE PLEIN ÉCRAN --- */
+#welcomeCanvas {
+    background: linear-gradient(135deg, #11998e, #38ef7d);
+    color: white;
+    border: none;
+    transition: transform 0.6s ease-in-out; /* Entrée fluide droite -> gauche */
+}
+
+/* Animation sur mesure lors de la fermeture vers le haut */
+#welcomeCanvas.slide-out-top {
+    transform: translateY(-100%) !important;
+    transition: transform 0.5s ease-in-out !important;
+}
+
+.welcome-content {
+    max-width: 500px;
+    margin: auto;
+}
 </style>
 </head>
 <body>
@@ -56,6 +75,21 @@ footer{
 <div class="loading-overlay" id="loadingOverlay">
     <div class="spinner-border text-light mb-2" role="status"></div>
     <h5>Chargement... veuillez patienter</h5>
+</div>
+
+<div class="offcanvas offcanvas-end w-100" id="welcomeCanvas" data-bs-backdrop="false" data-bs-keyboard="false">
+    <div class="offcanvas-body d-flex align-items-center text-center">
+        <div class="welcome-content p-4">
+            <i class="fa-solid fa-apple-whole fa-5x mb-4 text-white animate__animated animate__bounce"></i>
+            <h1 class="fw-bold mb-3">Mon Assistant Balance</h1>
+            <p class="fs-5 mb-5 opacity-90">Votre outil cloud de centralisation et gestion des codes balance (PLU) en temps réel.</p>
+            <div class="d-grid gap-2">
+                <button type="button" class="btn btn-light btn-lg rounded-pill fw-bold py-3 text-success shadow" onclick="fermerBienvenue()">
+                    Commencer <i class="fa-solid fa-arrow-right ms-2"></i>
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="container py-5 text-center">
@@ -230,6 +264,20 @@ async function loadArticles() {
     }
 }
 
+// Fonction de fermeture personnalisée : modifie l'axe de l'animation vers le haut
+function fermerBienvenue() {
+    const el = document.getElementById("welcomeCanvas");
+    el.classList.add("slide-out-top"); // Active la transition CSS vers le haut
+    
+    // Attend la fin de l'animation CSS (500ms) pour masquer complètement l'instance Bootstrap
+    setTimeout(() => {
+        let welcomeOffcanvas = bootstrap.Offcanvas.getInstance(el);
+        if(welcomeOffcanvas) {
+            welcomeOffcanvas.hide();
+        }
+    }, 500);
+}
+
 function resetAddFields() {
     document.getElementById("designation").value = "";
     document.getElementById("code").value = "";
@@ -260,21 +308,17 @@ async function ajouterArticle(){
     let c = document.getElementById("code").value.trim();
     if(!d || !c){ Swal.fire("Erreur","Champs obligatoires","error"); return;}
     
-    // --- VÉRIFICATION DES DOUBLONS ---
-    // 1. On vérifie si la désignation existe déjà (insensible à la casse)
     let designationExiste = articles.some(a => a.designation.toLowerCase() === d.toLowerCase());
     if(designationExiste) {
         Swal.fire("Doublon détecté", `L'article "${d}" existe déjà dans la base.`, "warning");
         return;
     }
 
-    // 2. On vérifie si le code balance existe déjà 
     let codeExiste = articles.find(a => a.code.toString() === c);
     if(codeExiste) {
         Swal.fire("Code déjà attribué", `Le code "${c}" est déjà utilisé par l'article : "${codeExiste.designation}".`, "warning");
         return;
     }
-    // ----------------------------------
 
     showLoading(true);
     try {
@@ -335,8 +379,6 @@ async function validerModification(){
     let newCode = document.getElementById("newCode").value.trim();
     if(!newDes || !newCode) { Swal.fire("Erreur","Tous les champs sont obligatoires","error"); return; }
     
-    // --- VÉRIFICATION DES DOUBLONS LORS DE LA MODIFICATION ---
-    // On vérifie les doublons uniquement si les valeurs ont changé par rapport à l'état initial
     if(newDes.toLowerCase() !== originalDesignationTemp.toLowerCase()) {
         let designationExiste = articles.some(a => a.designation.toLowerCase() === newDes.toLowerCase());
         if(designationExiste) {
@@ -353,7 +395,6 @@ async function validerModification(){
             return;
         }
     }
-    // ---------------------------------------------------------
 
     showLoading(true);
     try {
@@ -503,8 +544,16 @@ function importJSON(){
     reader.readAsText(file);
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    loadArticles();
+// Déclenchement au chargement complet du document
+document.addEventListener('DOMContentLoaded', async function() {
+    showLoading(true);
+    await loadArticles(); // Charge d'abord les données en tâche de fond
+    showLoading(false);
+    
+    // Initialise et affiche l'Offcanvas de bienvenue en plein écran
+    let welcomeEl = document.getElementById("welcomeCanvas");
+    let welcomeOffcanvas = new bootstrap.Offcanvas(welcomeEl);
+    welcomeOffcanvas.show();
 
     document.getElementById('addCanvas').addEventListener('hidden.bs.offcanvas', resetAddFields);
     document.getElementById('searchCanvas').addEventListener('hidden.bs.offcanvas', resetSearchFields);
