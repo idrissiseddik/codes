@@ -114,6 +114,43 @@ footer{
     border-radius: 10px !important;
     padding: 10px 25px !important;
 }
+
+/* Style pour le message de profil connecté */
+.profile-status {
+    margin-top: 25px;
+    padding: 12px 20px;
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 12px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+    backdrop-filter: blur(5px);
+}
+.profile-status i {
+    margin-right: 8px;
+}
+.profile-status span {
+    font-weight: bold;
+    color: #ffd700;
+}
+.profile-status .admin-badge {
+    background: #ffd700;
+    color: #198754;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    margin-left: 10px;
+    font-weight: bold;
+}
+.profile-status .user-badge {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    margin-left: 10px;
+    font-weight: bold;
+}
 </style>
 </head>
 <body>
@@ -184,6 +221,15 @@ footer{
                 <i class="fa fa-user-gear me-2"></i> Changer le profil
             </button>
         </div>
+    </div>
+
+    <!-- Message indiquant le profil connecté avec badge -->
+    <div class="profile-status text-white">
+        <i class="fa fa-circle-info me-1"></i> Vous êtes connecté en tant que : 
+        <span id="profilConnecteLabel">Utilisateur</span>
+        <span id="profilBadge" class="user-badge">
+            <i class="fa fa-user me-1"></i>Accès limité
+        </span>
     </div>
 </div>
 
@@ -303,6 +349,26 @@ let articles = [];
 let originalDesignationTemp = null; 
 let profilActuel = "user";
 
+// Fonction pour mettre à jour l'affichage du profil connecté avec badge
+function mettreAJourAffichageProfil() {
+    const profilLabel = document.getElementById("profilConnecteLabel");
+    const profilBadge = document.getElementById("profilBadge");
+    
+    if (profilLabel && profilBadge) {
+        if (profilActuel === "admin") {
+            profilLabel.innerHTML = "Administrateur";
+            profilLabel.style.color = "#ffd700";
+            profilBadge.innerHTML = '<i class="fa fa-user-shield me-1"></i>Accès complet';
+            profilBadge.className = "admin-badge";
+        } else {
+            profilLabel.innerHTML = "Utilisateur";
+            profilLabel.style.color = "#ffd700";
+            profilBadge.innerHTML = '<i class="fa fa-user me-1"></i>Accès limité';
+            profilBadge.className = "user-badge";
+        }
+    }
+}
+
 function showLoading(show) {
     document.getElementById("loadingOverlay").style.display = show ? "flex" : "none";
 }
@@ -334,6 +400,7 @@ async function loadArticles() {
 function choisirProfil(role) {
     if (role === 'user') {
         profilActuel = "user";
+        mettreAJourAffichageProfil();
         basculerEcranApplication();
     } else if (role === 'admin') {
         Swal.fire({
@@ -355,6 +422,7 @@ function choisirProfil(role) {
         }).then(result => {
             if (result.value === "Seddik") {
                 profilActuel = "admin";
+                mettreAJourAffichageProfil();
                 basculerEcranApplication();
             } else if (result.value !== undefined) {
                 Swal.fire({
@@ -389,6 +457,7 @@ function verifierAcces(targetCanvasId) {
 function basculerEcranApplication() {
     document.getElementById("profileSelectionScreen").style.display = "none";
     document.getElementById("mainApplicationScreen").style.display = "block";
+    mettreAJourAffichageProfil();
 }
 
 function ouvrirChangementProfil() {
@@ -470,7 +539,6 @@ function rechercher(){
     let result = "";
     articles.forEach(a => {
         if(a.designation.toLowerCase().includes(val)){
-            // Ajout du bouton copier avec onclick
             result += `<div class="alert alert-success d-flex justify-content-between align-items-center">
                         <span>${a.designation} - ${a.code}</span>
                         <button class="btn btn-sm btn-outline-success" onclick="copierTexte('${a.designation}')">
@@ -608,6 +676,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     showLoading(false);
     
     document.getElementById("profileSelectionScreen").style.display = "flex";
+    mettreAJourAffichageProfil();
 
     document.getElementById('addCanvas').addEventListener('hidden.bs.offcanvas', resetAddFields);
     document.getElementById('searchCanvas').addEventListener('hidden.bs.offcanvas', resetSearchFields);
